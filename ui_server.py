@@ -42,6 +42,17 @@ class UserProfile(BaseModel):
     user_name: Optional[str] = ""
     hust_cookies: Optional[Dict] = {}
     qldt_cookies: Optional[Dict] = {}
+    qldt_cookie_path: Optional[str] = ""
+    ctsv_cookie_path: Optional[str] = ""
+
+def _load_profile_data():
+    if os.path.exists(PROFILE_FILE):
+        try:
+            with open(PROFILE_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            pass
+    return UserProfile().dict()
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -54,21 +65,27 @@ async def get_dashboard(username: str = Depends(authenticate)):
 
 @app.get("/api/profile")
 async def get_profile(username: str = Depends(authenticate)):
-    if os.path.exists(PROFILE_FILE):
-        try:
-            with open(PROFILE_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except:
-            pass
-    return UserProfile().dict()
+    return _load_profile_data()
 
 @app.post("/api/profile")
 async def save_profile(profile: UserProfile, username: str = Depends(authenticate)):
     try:
         os.makedirs(os.path.dirname(PROFILE_FILE), exist_ok=True)
-        # Load existing profile to merge if needed, but here we just overwrite with the full object from UI
+        current_data = _load_profile_data()
+        
+        # Merge new data into current data
+        new_data = profile.dict()
+        for key, value in new_data.items():
+            # Update if value is not empty/default, or if it's a field we want to allow clearing
+            if value is not None:
+                if isinstance(value, str) and value == "" and key not in ["self_description", "timetable", "target_email"]:
+                    continue
+                if isinstance(value, dict) and value == {}:
+                    continue
+                current_data[key] = value
+        
         with open(PROFILE_FILE, 'w', encoding='utf-8') as f:
-            json.dump(profile.dict(), f, ensure_ascii=False, indent=4)
+            json.dump(current_data, f, ensure_ascii=False, indent=4)
         return {"status": "success"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -80,7 +97,7 @@ async def sync_auth(auth_data: Dict, username: str = Depends(authenticate)):
     Expected format: { "hust_cookies": {...}, "qldt_cookies": {...}, "user_code": "...", "user_name": "..." }
     """
     try:
-        current_data = await get_profile()
+        current_data = _load_profile_data()
         # Merge new auth data into profile
         for key in ["hust_cookies", "qldt_cookies", "user_code", "user_name"]:
             if key in auth_data:
@@ -108,7 +125,7 @@ async def upload_cookies(type: str, file: UploadFile = File(...), username: str 
             shutil.copyfileobj(file.file, buffer)
             
         # Update profile with the new path
-        profile = await get_profile()
+        profile = _load_profile_data()
         if type == 'ctsv':
             profile['ctsv_cookie_path'] = file_path
         else:

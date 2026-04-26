@@ -436,6 +436,7 @@
         const AUTH_URL = "https://asso.hust.edu.vn/adfs/oauth2/authorize?response_type=id_token&client_id=https%3A%2F%2Fctsv.hust.edu.vn&redirect_uri=https%3A%2F%2Fctsv.hust.edu.vn";
 
         function generateBookmarklet() {
+            const serverUrl = window.location.origin;
             const script = `javascript:(function(){
                 const data = {
                     hust_cookies: document.cookie.split('; ').reduce((prev, current) => {
@@ -447,13 +448,14 @@
                     user_name: localStorage.getItem('UserName') || '',
                     url: window.location.href
                 };
-                fetch('http://localhost:8000/api/sync-auth', {
+                fetch('${serverUrl}/api/sync-auth', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(data)
                 }).then(r => r.json()).then(d => alert('🎉 ' + d.message)).catch(e => alert('❌ Lỗi: ' + e));
             })();`;
-            document.getElementById('bookmarklet').href = script;
+            const link = document.getElementById('bookmarklet');
+            if (link) link.href = script;
         }
 
         function loginHust() {
@@ -492,10 +494,14 @@
             const data = {
                 self_description: document.getElementById('self_desc').value,
                 timetable: document.getElementById('timetable').value,
-                target_email: document.getElementById('target_email').value,
-                // Keep existing auth data
-                user_code: document.getElementById('user-info').innerText
+                target_email: document.getElementById('target_email').value
             };
+
+            // Only add user_code if it exists in the UI or we have it cached
+            const userInfoElem = document.getElementById('user-info');
+            if (userInfoElem) {
+                data.user_code = userInfoElem.innerText;
+            }
 
             try {
                 const response = await fetch('/api/profile', {
