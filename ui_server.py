@@ -44,6 +44,10 @@ class UserProfile(BaseModel):
     qldt_cookies: Optional[Dict] = {}
     qldt_cookie_path: Optional[str] = ""
     ctsv_cookie_path: Optional[str] = ""
+    scholarship_interval: Optional[int] = 1
+    activity_interval: Optional[int] = 1
+    award_interval: Optional[int] = 1
+    training_points_interval: Optional[int] = 6
 
 def _load_profile_data():
     if os.path.exists(PROFILE_FILE):

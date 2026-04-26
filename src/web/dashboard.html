@@ -393,6 +393,47 @@
             </div>
         </div>
 
+        <!-- Section 1.5: Monitoring Intervals -->
+        <div class="settings-card">
+            <h2 class="section-title">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Cấu hình Monitoring (Thời gian làm mới)
+            </h2>
+            <p style="color: var(--text-dim); margin-bottom: 25px; font-size: 0.95rem;">Đơn vị tính bằng <b>giờ</b>. Hệ thống sẽ tự động kiểm tra dữ liệu mới sau mỗi khoảng thời gian này.</p>
+            
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div class="input-group">
+                    <label style="font-size: 0.9rem;">Học bổng (CTSV)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="scholarship_interval" min="1" placeholder="1" style="width: 100%; background: transparent; border: none; padding: 18px 20px; color: var(--text); font-family: inherit; font-size: 1rem;">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label style="font-size: 0.9rem;">Hoạt động (CTSV)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="activity_interval" min="1" placeholder="1" style="width: 100%; background: transparent; border: none; padding: 18px 20px; color: var(--text); font-family: inherit; font-size: 1rem;">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label style="font-size: 0.9rem;">Giải thưởng (QLĐT)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="award_interval" min="1" placeholder="1" style="width: 100%; background: transparent; border: none; padding: 18px 20px; color: var(--text); font-family: inherit; font-size: 1rem;">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label style="font-size: 0.9rem;">Điểm rèn luyện</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="training_points_interval" min="1" placeholder="6" style="width: 100%; background: transparent; border: none; padding: 18px 20px; color: var(--text); font-family: inherit; font-size: 1rem;">
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 30px; text-align: right;">
+                <button class="btn-primary" onclick="saveData()" style="display: inline-flex;">Lưu cấu hình thời gian</button>
+            </div>
+        </div>
+
         <!-- Section 2: User Profile -->
         <div class="settings-card">
             <h2 class="section-title">
@@ -479,6 +520,11 @@
                     if (data.qldt_cookie_path) {
                         document.getElementById('qldt_path').innerText = data.qldt_cookie_path.split(/[\\/]/).pop();
                     }
+
+                    document.getElementById('scholarship_interval').value = data.scholarship_interval || 1;
+                    document.getElementById('activity_interval').value = data.activity_interval || 1;
+                    document.getElementById('award_interval').value = data.award_interval || 1;
+                    document.getElementById('training_points_interval').value = data.training_points_interval || 6;
                 }
             } catch (e) {
                 console.error("Lỗi tải dữ liệu", e);
@@ -494,7 +540,11 @@
             const data = {
                 self_description: document.getElementById('self_desc').value,
                 timetable: document.getElementById('timetable').value,
-                target_email: document.getElementById('target_email').value
+                target_email: document.getElementById('target_email').value,
+                scholarship_interval: parseInt(document.getElementById('scholarship_interval').value) || 1,
+                activity_interval: parseInt(document.getElementById('activity_interval').value) || 1,
+                award_interval: parseInt(document.getElementById('award_interval').value) || 1,
+                training_points_interval: parseInt(document.getElementById('training_points_interval').value) || 6
             };
 
             // Only add user_code if it exists in the UI or we have it cached

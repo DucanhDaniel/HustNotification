@@ -104,7 +104,7 @@ DASHBOARD_USERNAME = os.getenv('DASHBOARD_USERNAME')
 DASHBOARD_PASSWORD = os.getenv('DASHBOARD_PASSWORD')
 
 # Intervals
-SCHOLARSHIP_INTERVAL = 1
-ACTIVITY_INTERVAL = 1
-AWARD_INTERVAL = 1
-TRAINING_POINTS_INTERVAL = 6
+SCHOLARSHIP_INTERVAL = int(get_conf('scholarship_interval', 1))
+ACTIVITY_INTERVAL = int(get_conf('activity_interval', 1))
+AWARD_INTERVAL = int(get_conf('award_interval', 1))
+TRAINING_POINTS_INTERVAL = int(get_conf('training_points_interval', 6))
