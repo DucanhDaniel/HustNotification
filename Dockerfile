@@ -1,39 +1,34 @@
-# Use an official Python runtime as a parent image
+# Use the official Python 3.10 slim image
 FROM python:3.10-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Copy uv binary from the official image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Set the working directory in the container
+# Prevent Python from writing .pyc files and enable unbuffered logging
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Set the working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# Install dependencies using uv
+# We use --system to install directly into the container's Python environment
+# and leverage cache mount for speed
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=requirements.txt,target=requirements.txt \
+    uv pip install --system -r requirements.txt
 
-# Install uv for dependency management
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-ENV UV_SYSTEM_PYTHON=1
-
-
-# Copy dependency files
-COPY requirements.txt ./
-
-# Install dependencies to system Python using uv
-RUN uv pip install --system --no-cache -r requirements.txt
-
-
-# Copy the rest of the application code into the container
+# Copy the rest of the application code
 COPY . .
 
 # Create data directory if it doesn't exist
 RUN mkdir -p data
 
-# Expose the port the dashboard runs on
+# Expose the port (used by dashboard)
 EXPOSE 8000
 
-# Default command (can be overridden in docker-compose)
+# Default command (usually overridden in docker-compose)
 CMD ["python", "-m", "src.main"]
+
+
 
