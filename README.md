@@ -1,63 +1,81 @@
 # 🚀 HUST Monitoring System (AI-Powered)
 
-Hệ thống theo dõi tự động các hoạt động, học bổng và thông tin đào tạo tại Đại học Bách khoa Hà Nội (HUST), tích hợp trí tuệ nhân tạo (OpenAI) để phân tích và gợi ý cá nhân hóa.
+Hệ thống theo dõi tự động toàn diện các hoạt động, học bổng và thông tin đào tạo tại Đại học Bách khoa Hà Nội (HUST). Tích hợp trí tuệ nhân tạo (OpenAI) để phân tích, đưa ra chiến lược tối ưu điểm rèn luyện và cá nhân hóa lộ trình sinh viên.
+
+---
 
 ## ✨ Tính năng nổi bật
 
--   **📡 Giám sát đa kênh**: Tự động theo dõi Học bổng (CTSV), Hoạt động ngoại khóa (CTSV), Giải thưởng (QLĐT) và Điểm rèn luyện.
--   **🤖 AI Analysis (OpenAI)**: 
-    -   Phân tích mức độ phù hợp của học bổng dựa trên hồ sơ cá nhân (GPA, mục tiêu, chuyên ngành).
-    -   Đối chiếu thời gian hoạt động với **Thời khóa biểu** để cảnh báo trùng lịch.
-    -   Xác định hoạt động Online/Offline và phân loại theo hạng mục điểm rèn luyện của HUST.
--   **📅 Ưu tiên Deadline**: Tự động lọc các mục hết hạn và ưu tiên hiển thị các mục **Sắp hết hạn (⏰ SẮP HẾT HẠN)** lên đầu email.
--   **🎨 Dashboard hiện đại**: Giao diện Web (FastAPI) giúp người dùng dễ dàng cấu hình hồ sơ cá nhân và thời khóa biểu.
--   **📧 Thông báo tức thì**: Gửi email định dạng HTML chuyên nghiệp, dễ nhìn.
--   **🐳 Dockerized**: Hỗ trợ chạy bằng Docker và Docker Compose chỉ với một câu lệnh.
+### 1. 📡 Giám sát đa kênh 24/7
+-   **Scholarships (CTSV)**: Tự động theo dõi các nguồn học bổng mới nhất.
+-   **Activities (CTSV)**: Cập nhật các hoạt động ngoại khóa đang mở đăng ký.
+-   **Awards & Scholarships (QLĐT)**: Theo dõi các giải thưởng và học bổng từ cổng quản lý đào tạo.
+-   **Training Points**: Theo dõi biến động điểm rèn luyện chi tiết đến từng tiêu chí.
+
+### 2. 🤖 Trí tuệ nhân tạo (GPT-4o Mini)
+-   **Chiến lược điểm rèn luyện**: Tự động phân tích các tiêu chí còn thiếu, đối chiếu với danh sách hoạt động đang mở và thời khóa biểu để đưa ra lộ trình tham gia tối ưu nhất.
+-   **Phân tích sự phù hợp**: Đánh giá mức độ phù hợp của học bổng dựa trên GPA, chuyên ngành và mô tả bản thân.
+-   **Cảnh báo trùng lịch**: Tự động so sánh thời gian hoạt động với **Thời khóa biểu** cá nhân để tránh đăng ký nhầm giờ học.
+
+### 3. 📧 Báo cáo chuyên nghiệp & Định kỳ
+-   **Báo cáo biến động**: Gửi email ngay lập tức khi có sự thay đổi (điểm số mới, hoạt động mới).
+-   **Báo cáo định kỳ**: Gửi tổng kết điểm rèn luyện kèm lời khuyên từ AI mỗi 6 giờ (mặc định).
+-   **Email HTML Cao cấp**: Định dạng rõ ràng, có thanh tiến độ (progress bar) và các huy hiệu (Online, Sắp hết hạn).
+
+### 4. 🛡️ Độ bền bỉ & Bảo mật
+-   **Cơ chế Fallback**: Tự động sử dụng dữ liệu cũ từ bộ nhớ đệm JSON nếu hệ thống trường gặp sự cố hoặc phiên đăng nhập hết hạn.
+-   **Gộp Cookie thông minh**: Tự động gộp dữ liệu đăng nhập từ UI và file cookies, lọc domain để tránh lỗi header quá lớn.
+-   **Đồng bộ SSO**: Tự động chia sẻ token giữa các module CTSV và QLĐT.
+
+---
 
 ## 🛠️ Cài đặt & Sử dụng
 
 ### 1. Chuẩn bị
--   Python 3.10+
--   File `credentials.json` từ Google Cloud Console (để sử dụng Gmail API).
--   API Key từ OpenAI.
+-   Python 3.10+ (hoặc Docker)
+-   API Key OpenAI (sk-...)
+-   File `credentials.json` & `token.json` cho Gmail API (nếu gửi qua Gmail).
 
-### 2. Cài đặt thủ công
-1.  Cài đặt các thư viện:
+### 2. Sử dụng với Docker (Khuyên dùng)
+Hệ thống được tách thành 2 dịch vụ độc lập để tối ưu hiệu suất:
+```bash
+docker-compose up -d --build
+```
+-   **Dashboard (Port 8000)**: Giao diện cấu hình profile, timetable và upload cookies.
+-   **Monitor**: Tiến trình chạy ngầm thực hiện quét dữ liệu và gửi thông báo.
+
+### 3. Cài đặt thủ công
+1.  **Cài đặt dependencies** (khuyên dùng `uv`):
     ```bash
-    pip install -r requirements.txt
+    uv sync
+    # Hoặc pip install -r requirements.txt
     ```
-2.  Tạo file `.env` từ mẫu sau:
-    ```env
-    OPENAI_API_KEY="your_openai_key"
-    HUST_COOKIES_JSON='{"TokenCode": "...", ...}'
-    QLDT_COOKIES_JSON='{"x-access-token": "...", ...}'
-    ```
-3.  Chạy Dashboard để nhập thông tin cá nhân:
+2.  **Cấu hình biến môi trường**:
+    Tạo file `.env` và điền `OPENAI_API_KEY`.
+3.  **Khởi chạy Dashboard**:
     ```bash
     python ui_server.py
     ```
-    Truy cập `http://localhost:8000` để thiết lập.
-4.  Chạy hệ thống Monitor:
+4.  **Khởi chạy Monitor**:
     ```bash
     python -m src.main
     ```
 
-### 3. Chạy với Docker (Khuyên dùng)
-Hệ thống sẽ chạy song song cả Monitor và Dashboard:
-```bash
-docker-compose up -d --build
-```
+---
 
-## 📂 Cấu trúc thư mục
--   `src/monitors/`: Các module theo dõi (Scholarship, Activity, Award, Training Points).
--   `src/utils/`: Các tiện ích (AI Analyzer, Email Sender, API Fetcher).
--   `src/web/`: Giao diện Dashboard.
--   `data/`: Nơi lưu trữ dữ liệu local và hồ sơ người dùng.
--   `ui_server.py`: Backend FastAPI cho Dashboard.
-
-## 📝 Cấu hình
--   Mọi cấu hình hệ thống (Thời gian giãn cách, Email người nhận) nằm trong `src/config.py`.
--   Các thông tin nhạy cảm nằm trong `.env`.
+## 🎨 Dashboard & Authentication
+Truy cập `http://localhost:8000` để:
+-   Nhập mô tả bản thân và dán Thời khóa biểu từ trang cá nhân.
+-   Upload tệp `cookies.txt` (định dạng Netscape) xuất từ trình duyệt.
+-   Đồng bộ thông tin đăng nhập tự động.
 
 ---
-*Phát triển bởi Antigravity AI Assistant.*
+
+## 📂 Cấu trúc dự án
+-   `src/monitors/`: Logic quét dữ liệu CTSV/QLĐT.
+-   `src/utils/`: AI Analyzer, Email Sender, API Fetcher.
+-   `src/web/`: Frontend Dashboard.
+-   `data/`: Lưu trữ Profile, Timetable, Cookies và Cache dữ liệu.
+
+---
+
