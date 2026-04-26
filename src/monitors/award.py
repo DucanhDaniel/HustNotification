@@ -26,41 +26,41 @@ def check_for_new_awards():
         award_list = data.get('data', [])
         print(f"Awards fetched successfully. Found {len(award_list)} items.")
         
-        tracker = DataTracker(data_file='data/hust_awards.json', unique_key='id')
-        new_awards = tracker.get_new_items(award_list)
+        # Sort by registerTo descending and take top 5
+        award_list.sort(key=lambda x: x.get('registerTo') or 0, reverse=True)
+        top_awards = award_list[:10]
 
-        if new_awards:
-            print(f"New awards detected: {len(new_awards)}")
+        if top_awards:
+            print(f"Analyzing top {len(top_awards)} awards by deadline...")
             
             # AI Analysis
-            print("Analyzing awards with AI...")
             user_profile = {}
             if os.path.exists('data/user_profile.json'):
                 with open('data/user_profile.json', 'r', encoding='utf-8') as f:
                     user_profile = json.load(f)
             
             analyzer = AIAnalyzer()
-            ai_results = analyzer.analyze_awards(new_awards, user_profile)
+            ai_results = analyzer.analyze_awards(top_awards, user_profile)
             summary_text = ai_results.get("summary", "Không có tóm tắt từ AI.")
             matches = ai_results.get("matches", [])
             match_map = {str(m['award_id']): m for m in matches}
 
-            subject = f"🔔 Phát hiện {len(new_awards)} học bổng/giải thưởng mới từ QLĐT!"
+            subject = f"🔔 Top {len(top_awards)} Học bổng/Giải thưởng mới nhất từ QLĐT"
             
             body = f"""
             <html>
             <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 850px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #1b5e20; border-bottom: 2px solid #1b5e20; padding-bottom: 10px;">🏆 Thông tin Học bổng & Giải thưởng mới (QLĐT)</h2>
+                <h2 style="color: #1b5e20; border-bottom: 2px solid #1b5e20; padding-bottom: 10px;">🏆 Top {len(top_awards)} Học bổng & Giải thưởng mới nhất (QLĐT)</h2>
                 
                 <div style="background-color: #f1f8e9; padding: 20px; border-radius: 12px; border-left: 6px solid #2e7d32; margin-bottom: 30px;">
                     <h3 style="color: #2e7d32; margin-top: 0;">🤖 Tóm tắt & Gợi ý từ AI:</h3>
                     <div style="font-size: 15px; color: #1b5e20;">{summary_text}</div>
                 </div>
 
-                <p>Hệ thống vừa phát hiện các thông tin học bổng mới trên cổng student.hust.edu.vn:</p>
+                <p>Danh sách 5 thông tin học bổng/giải thưởng mới nhất trên cổng student.hust.edu.vn:</p>
             """
             
-            for award in new_awards:
+            for award in top_awards:
                 aid = str(award.get('id'))
                 name = award.get('name') or 'Không có tên'
                 partners = ", ".join(award.get('partnerNames', [])) or 'Đang cập nhật'
