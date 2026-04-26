@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Depends, status
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import Optional, Dict
@@ -6,8 +7,30 @@ import uvicorn
 import json
 import os
 import shutil
+import secrets
+from src import config
 
 app = FastAPI(title="HUST Monitoring Dashboard")
+security = HTTPBasic()
+
+def authenticate(credentials: HTTPBasicCredentials = Depends(security)):
+    current_username_bytes = credentials.username.encode("utf8")
+    correct_username_bytes = config.DASHBOARD_USERNAME.encode("utf8")
+    is_correct_username = secrets.compare_digest(
+        current_username_bytes, correct_username_bytes
+    )
+    current_password_bytes = credentials.password.encode("utf8")
+    correct_password_bytes = config.DASHBOARD_PASSWORD.encode("utf8")
+    is_correct_password = secrets.compare_digest(
+        current_password_bytes, correct_password_bytes
+    )
+    if not (is_correct_username and is_correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
 
 PROFILE_FILE = 'data/user_profile.json'
 
@@ -22,7 +45,7 @@ class UserProfile(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 @app.get("/dashboard", response_class=HTMLResponse)
-async def get_dashboard():
+async def get_dashboard(username: str = Depends(authenticate)):
     dashboard_path = 'src/web/dashboard.html'
     if os.path.exists(dashboard_path):
         with open(dashboard_path, 'r', encoding='utf-8') as f:
@@ -30,7 +53,7 @@ async def get_dashboard():
     return "<h1>Dashboard file not found</h1>"
 
 @app.get("/api/profile")
-async def get_profile():
+async def get_profile(username: str = Depends(authenticate)):
     if os.path.exists(PROFILE_FILE):
         try:
             with open(PROFILE_FILE, 'r', encoding='utf-8') as f:
@@ -40,7 +63,7 @@ async def get_profile():
     return UserProfile().dict()
 
 @app.post("/api/profile")
-async def save_profile(profile: UserProfile):
+async def save_profile(profile: UserProfile, username: str = Depends(authenticate)):
     try:
         os.makedirs(os.path.dirname(PROFILE_FILE), exist_ok=True)
         # Load existing profile to merge if needed, but here we just overwrite with the full object from UI
@@ -51,7 +74,7 @@ async def save_profile(profile: UserProfile):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/sync-auth")
-async def sync_auth(auth_data: Dict):
+async def sync_auth(auth_data: Dict, username: str = Depends(authenticate)):
     """
     Endpoint to receive auth data from the bookmarklet.
     Expected format: { "hust_cookies": {...}, "qldt_cookies": {...}, "user_code": "...", "user_name": "..." }
@@ -72,7 +95,7 @@ async def sync_auth(auth_data: Dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/upload-cookies")
-async def upload_cookies(type: str, file: UploadFile = File(...)):
+async def upload_cookies(type: str, file: UploadFile = File(...), username: str = Depends(authenticate)):
     """
     type: 'ctsv' or 'qldt'
     """

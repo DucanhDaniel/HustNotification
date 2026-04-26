@@ -100,6 +100,8 @@ USER_NAME = get_conf('user_name', USER_CODE)
 CURRENT_SEMESTER = get_conf('current_semester', '2025-2')
 TARGET_EMAIL = get_conf('target_email', 'ducanh.opendb@gmail.com')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+DASHBOARD_USERNAME = os.getenv('DASHBOARD_USERNAME')
+DASHBOARD_PASSWORD = os.getenv('DASHBOARD_PASSWORD')
 
 # Intervals
 SCHOLARSHIP_INTERVAL = 1
