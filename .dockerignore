@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+data/
+token.json
+credentials.json
+.git/
+.gitignore
+scratch/
+tests/

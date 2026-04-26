@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build: .
+    container_name: hust_dashboard
+    command: python ui_server.py
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env
+    restart: unless-stopped
+
+  monitor:
+    build: .
+    container_name: hust_monitor
+    command: python -m src.main
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env
+      - ./token.json:/app/token.json
+      - ./credentials.json:/app/credentials.json
+    restart: unless-stopped
+

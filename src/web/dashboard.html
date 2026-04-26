@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HUST Monitoring Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8C1515;
+            --secondary: #2C2C2C;
+            --accent: #E8B923;
+            --bg: #0F1014;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass: rgba(255, 255, 255, 0.03);
+            --text: #E0E0E0;
+            --text-dim: #A0A0A0;
+            --success: #2e7d32;
+            --info: #0288d1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(140, 21, 21, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(232, 185, 35, 0.1) 0%, transparent 40%);
+            overflow-x: hidden;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: var(--glass);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 50px;
+            margin-bottom: 40px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        header .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(140, 21, 21, 0.2);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFF 0%, #8C1515 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+        }
+
+        p.subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary), 0 10px 30px -10px rgba(140, 21, 21, 0.3);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 18px 20px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        textarea {
+            height: 150px;
+            resize: none;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+        }
+
+        /* Settings Card */
+        .settings-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 40px;
+        }
+
+        .auth-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #666;
+        }
+
+        .status-dot.online {
+            background: #4caf50;
+            box-shadow: 0 0 10px #4caf50;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, #b31b1b 100%);
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(140, 21, 21, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -10px rgba(140, 21, 21, 0.5);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary);
+        }
+
+        /* Bookmarklet Area */
+        .bookmarklet-box {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(2, 136, 209, 0.1);
+            border: 1px dashed var(--info);
+            border-radius: 16px;
+        }
+
+        .bookmarklet-link {
+            display: inline-block;
+            padding: 8px 16px;
+            background: var(--info);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: move;
+            margin: 10px 0;
+        }
+
+        .step-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .step-list li {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .step-num {
+            background: var(--info);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+        }
+
+        .status-toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 16px 32px;
+            background: var(--success);
+            color: white;
+            border-radius: 16px;
+            font-weight: 600;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+
+        .status-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 30px;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="badge">AI-Powered Monitoring</div>
+            <h1>HUST Dashboard</h1>
+            <p class="subtitle">Tối ưu hóa cơ hội nhận học bổng và điểm rèn luyện thông qua phân tích hồ sơ cá nhân bằng
+                AI.</p>
+        </header>
+
+        <!-- Section 1: Configuration -->
+        <div class="settings-card">
+            <h2 class="section-title">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                    </path>
+                    <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                Cài đặt & Token
+            </h2>
+
+            <div class="input-group" style="margin-bottom: 30px;">
+                <label>Email nhận thông báo</label>
+                <div style="display: flex; gap: 15px;">
+                    <div class="input-wrapper" style="flex: 1;">
+                        <input type="email" id="target_email" placeholder="ví dụ: student@sis.hust.edu.vn">
+                    </div>
+                    <button class="btn-primary" onclick="saveData()">Lưu Email</button>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-dim);">Tất cả báo cáo học bổng và điểm rèn luyện sẽ được
+                    gửi tới địa chỉ này.</p>
+            </div>
+
+            <!-- Cookie Upload -->
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px;">
+                <h3
+                    style="font-size: 1.1rem; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                        </path>
+                    </svg>
+                    Tải lên Cookies (Từ J2Team Cookies)
+                </h3>
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div class="input-group">
+                        <label style="font-size: 0.9rem;">CTSV Cookies (File hiện tại: <span id="ctsv_path"
+                                style="color: var(--info);">cookies.txt</span>)</label>
+                        <div class="input-wrapper">
+                            <input type="file" id="ctsv_file" accept=".txt" style="padding: 15px;">
+                        </div>
+                        <button class="btn-outline" onclick="uploadFile('ctsv_file', '/api/upload-cookies?type=ctsv')"
+                            style="margin-top: 10px; width: 100%; justify-content: center;">Tải lên CTSV</button>
+                    </div>
+                    <div class="input-group">
+                        <label style="font-size: 0.9rem;">QLĐT Cookies (File hiện tại: <span id="qldt_path"
+                                style="color: var(--info);">qldt.hust.edu.vn_cookies.txt</span>)</label>
+                        <div class="input-wrapper">
+                            <input type="file" id="qldt_file" accept=".txt" style="padding: 15px;">
+                        </div>
+                        <button class="btn-outline" onclick="uploadFile('qldt_file', '/api/upload-cookies?type=qldt')"
+                            style="margin-top: 10px; width: 100%; justify-content: center;">Tải lên QLĐT</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: User Profile -->
+        <div class="settings-card">
+            <h2 class="section-title">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                Hồ sơ năng lực AI (Dùng để Matching)
+            </h2>
+
+            <div class="input-group" style="margin-bottom: 30px;">
+                <label>Mô tả bản thân & Thành tích</label>
+                <div class="input-wrapper">
+                    <textarea id="self_desc"
+                        placeholder="Ví dụ: Sinh viên năm 3, ngành Khoa học Máy tính, GPA 3.7, IELTS 7.5, đam mê AI/Blockchain. Có giải thưởng lập trình..."
+                        style="height: 200px; padding: 20px;"></textarea>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-dim);">AI sẽ dùng thông tin này để tính toán % độ phù
+                    hợp với từng học bổng.</p>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 40px;">
+                <label>Thời khóa biểu (SIS/QLĐT)</label>
+                <div class="input-wrapper">
+                    <textarea id="timetable" placeholder="Dán nội dung thời khóa biểu tại đây (dạng văn bản)..."
+                        style="height: 250px; padding: 20px; font-family: monospace;"></textarea>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-dim);">AI sẽ phân tích thời gian rảnh để gợi ý hoạt động
+                    ngoại khóa không trùng lịch học.</p>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="btn-primary" style="padding: 20px 80px; font-size: 1.25rem; margin: 0 auto;"
+                    onclick="saveData()" id="saveBtn">Lưu hồ sơ AI</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="status" class="status-toast">✨ Cập nhật thành công!</div>
+
+    <script>
+        const AUTH_URL = "https://asso.hust.edu.vn/adfs/oauth2/authorize?response_type=id_token&client_id=https%3A%2F%2Fctsv.hust.edu.vn&redirect_uri=https%3A%2F%2Fctsv.hust.edu.vn";
+
+        function generateBookmarklet() {
+            const script = `javascript:(function(){
+                const data = {
+                    hust_cookies: document.cookie.split('; ').reduce((prev, current) => {
+                        const [name, ...value] = current.split('=');
+                        prev[name] = value.join('=');
+                        return prev;
+                    }, {}),
+                    user_code: localStorage.getItem('UserCode') || '',
+                    user_name: localStorage.getItem('UserName') || '',
+                    url: window.location.href
+                };
+                fetch('http://localhost:8000/api/sync-auth', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                }).then(r => r.json()).then(d => alert('🎉 ' + d.message)).catch(e => alert('❌ Lỗi: ' + e));
+            })();`;
+            document.getElementById('bookmarklet').href = script;
+        }
+
+        function loginHust() {
+            const nonce = Math.random().toString(36).substring(2);
+            const state = Math.random().toString(36).substring(2);
+            window.open(`${AUTH_URL}&nonce=${nonce}&state=${state}`, '_blank');
+        }
+
+        async function loadData() {
+            try {
+                const response = await fetch('/api/profile');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('self_desc').value = data.self_description || '';
+                    document.getElementById('timetable').value = data.timetable || '';
+                    document.getElementById('target_email').value = data.target_email || '';
+
+                    if (data.ctsv_cookie_path) {
+                        document.getElementById('ctsv_path').innerText = data.ctsv_cookie_path.split(/[\\/]/).pop();
+                    }
+                    if (data.qldt_cookie_path) {
+                        document.getElementById('qldt_path').innerText = data.qldt_cookie_path.split(/[\\/]/).pop();
+                    }
+                }
+            } catch (e) {
+                console.error("Lỗi tải dữ liệu", e);
+            }
+        }
+
+        async function saveData() {
+            const btn = document.getElementById('saveBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Đang lưu...";
+            btn.disabled = true;
+
+            const data = {
+                self_description: document.getElementById('self_desc').value,
+                timetable: document.getElementById('timetable').value,
+                target_email: document.getElementById('target_email').value,
+                // Keep existing auth data
+                user_code: document.getElementById('user-info').innerText
+            };
+
+            try {
+                const response = await fetch('/api/profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const toast = document.getElementById('status');
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 3000);
+                }
+            } catch (e) {
+                alert("Lỗi kết nối server!");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function uploadFile(inputId, endpoint) {
+            const fileInput = document.getElementById(inputId);
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("Vui lòng chọn file!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const toast = document.getElementById('status');
+                    toast.innerText = "✨ Tải lên thành công!";
+                    toast.classList.add('show');
+                    setTimeout(() => toast.classList.remove('show'), 3000);
+                } else {
+                    alert("Lỗi tải lên!");
+                }
+            } catch (e) {
+                alert("Lỗi kết nối server!");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            generateBookmarklet();
+        });
+    </script>
+</body>
+
+</html>
